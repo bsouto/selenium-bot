@@ -11,8 +11,6 @@ from bs4 import BeautifulSoup as bs
 
 from src.yolov3 import YoloV3
 
-DESIRED_LABELS = ['dog', 'cat']
-
 
 class InstaBot:
     def __init__(self, **kwargs):
@@ -28,16 +26,14 @@ class InstaBot:
 
     @staticmethod
     def get_image(url_image):
-        """
-        Download image from url image.
+        """Download image from url image
         """
         image_data = requests.get(url_image)
         image_data_content = image_data.content
         return Image.open(BytesIO(image_data_content))
 
     def save_image(self, image, label):
-        """
-        Save image in the folder indicated by the label.
+        """Save image in the folder indicated by the label
         """
         out_folder_path = os.path.join(self.path_out, label)
         os.makedirs(out_folder_path, exist_ok=True)
@@ -45,23 +41,20 @@ class InstaBot:
         image.save(out_image_path)
 
     def labels_in_image(self, image):
-        """
-        Get object labels in the image using Yolo V3.
+        """Get object labels in the image using Yolo V3
         """
         return list(set(self.yolov3(image=image)))
 
     def get_data_images(self):
-        """
-        Get data images from html.
+        """Get data images from html.
         """
         html_to_parse = str(self.driver.page_source)
         html = bs(html_to_parse, 'html.parser')
         return html.findAll('img', {'class': 'FFVAD'})
 
     def download_images(self):
-        """
-        Main process to find, filter and download the images.
-        Obtaining the images by scrolling and using the YoloV3 to check if it includes what we are looking for.
+        """Main process to find, filter and download the images.
+           Obtaining the images by scrolling and using the YoloV3 to check if it includes what we are looking for.
         """
         downloaded_images = []
         r_scroll_h = 'return document.body.scrollHeight'
@@ -87,19 +80,17 @@ class InstaBot:
                     image = self.get_image(image_data.attrs['src'])
                     labels = self.labels_in_image(image)
                     for label in labels:
-                        if label in DESIRED_LABELS:
+                        if label in ['dog', 'cat']:
                             self.save_image(image, label)
                             downloaded_images.append(image_data)
                 except Exception:
                     logging.warning('Error downloading an image')
 
     def __call__(self, *args, **kwargs):
-        """
-        1. Open Instagram main page
-        2. Log In: user, password, submit
-        3. No Instagram notifications
-        4. Download images
-        5. Hashtag #pets
+        """1. Open Instagram main page
+           2. Log In: user, password, submit - 2.1. No Instagram notifications
+           3. Download images
+           4. Hashtag #PETS
         """
         self.driver.get('https://instagram.com')
         self.driver.implicitly_wait(2)
@@ -109,10 +100,10 @@ class InstaBot:
         self.driver.find_element_by_xpath('//button[@type=\"submit\"]').click()
         self.driver.implicitly_wait(4)
 
-        self.driver.find_element_by_xpath('//button[contains(text(), "Ahora no")]').click()
+        self.driver.find_element_by_xpath('//button[contains(text(), "Not Now")]').click()  # "Ahora no" in spanish
         self.driver.implicitly_wait(4)
 
-        self.driver.find_element_by_xpath('//input[@type=\"text\"]').send_keys('#pets')
+        self.driver.find_element_by_xpath('//input[@type=\"text\"]').send_keys('#PETS')
         time.sleep(3)
         for _ in range(2):
             self.driver.find_element_by_xpath('//input[@type=\"text\"]').send_keys(Keys.ENTER)
@@ -122,7 +113,7 @@ class InstaBot:
 
 if __name__ == '__main__':
     import argparse
-    ap = argparse.ArgumentParser(description='Process some integers.')
+    ap = argparse.ArgumentParser()
     ap.add_argument('--user', required=True, help='Instagran user name')
     ap.add_argument('--password', required=True, help='Instagram password')
     ap.add_argument('--path_out', required=True, help='Path to save images')
