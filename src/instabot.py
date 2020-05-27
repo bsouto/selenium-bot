@@ -89,8 +89,8 @@ class InstaBot:
     def __call__(self, *args, **kwargs):
         """1. Open Instagram main page
            2. Log In: user, password, submit - 2.1. No Instagram notifications
-           3. Download images
-           4. Hashtag #PETS
+           3. Hashtag #PETS
+           4. Scroll and download images
         """
         self.driver.get('https://instagram.com')
         self.driver.implicitly_wait(2)
